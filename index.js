@@ -29,24 +29,7 @@ const client = new MongoClient(uri, {
     }
 });
 
-/*Verify Middleware of JWT */
-const verifyToken = async (req, res, next) => {
-    let token = req?.cookies?.token;
-    console.log('Value of token in middleware: ', token);
-    if (!token) {
-        return res.status(401).send({ message: 'Not Authorized' })
-    }
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
-        if (err) {
-            console.log(err);
-            return res.status(401).send({ message: 'UnAuthorized' })
-        }
-        console.log('value in the token', decoded);
-        req.user = decoded;
-        next();
-    })
 
-}
 
 async function run() {
     try {
@@ -64,7 +47,7 @@ async function run() {
             let user = req.body;
             // console.log("User in Jwt :", user);
             let token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '1h' });
-            res.send({ token });      
+            res.send({ token });
         })
 
 
@@ -78,9 +61,30 @@ async function run() {
         //Registration
         app.post('/user', async (req, res) => {
             let data = req.body;
+            let email = data?.email;
+            let query = {email: email};
+            let exist = await userCollection.findOne(query);
+            if(exist){
+                res.send('User already exist');
+                return;
+            }
             let result = await userCollection.insertOne(data)
             res.send(result);
         });
+
+        // ===============================Check Admin👇===================================
+        app.get('/users/owner/:email', async (req, res) => {
+            let userEmail = req.params.email;
+            console.log(userEmail);
+            let query = { email: userEmail };
+            let user = await userCollection.findOne(query);
+            console.log(user);
+            let owner = false;
+            if (user) {
+                owner = user?.role === 'owner'
+            }
+            res.send({ owner });
+        })
 
         //Login
         app.post('/login', async (req, res) => {
@@ -106,7 +110,7 @@ async function run() {
 
 
 
-        await client.db("admin").command({ ping: 1 });
+        await client.db("Owner").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
