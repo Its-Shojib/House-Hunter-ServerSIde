@@ -45,7 +45,6 @@ async function run() {
         // -------------------------------------AUTH---------------------------------------------
         app.post('/jwt', async (req, res) => {
             let user = req.body;
-            // console.log("User in Jwt :", user);
             let token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '1h' });
             res.send({ token });
         })
@@ -54,7 +53,6 @@ async function run() {
         /*Logout APi */
         app.post('/logout', async (req, res) => {
             let user = req.body;
-            console.log("user for logout: ", user);
             res.clearCookie('token', { maxAge: 0, sameSite: 'none', secure: true }).send({ success: true })
         })
 
@@ -75,10 +73,8 @@ async function run() {
         // ===============================Check Admin👇===================================
         app.get('/users/owner/:email', async (req, res) => {
             let userEmail = req.params.email;
-            console.log(userEmail);
             let query = { email: userEmail };
             let user = await userCollection.findOne(query);
-            // console.log(user);
             let owner = false;
             if (user) {
                 owner = user?.role === 'owner'
@@ -110,6 +106,58 @@ async function run() {
             res.send(result);
         });
 
+        //add new House
+        app.post('/addnew-house', async (req, res) => {
+            let newHouse = req.body;
+            let result = await houseCollection.insertOne(newHouse)
+            res.send(result);
+        });
+
+        app.get('/manage-house/:email', async (req, res) => {
+            let userEmail = req.params.email;
+            console.log(userEmail);
+            let query = { email: userEmail };
+            let result = await houseCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        //Load update House
+        app.get('/update/:id', async (req, res) => {
+            let id = req.params.id;
+            let query = { _id: new ObjectId(id) };
+            let result = await houseCollection.findOne(query);
+            res.send(result);
+        });
+        app.patch('/update-house/:id', async (req, res) => {
+            let newHouse = req.body;
+            let id = req.params.id;
+            const options = { upsert: true };
+            let query = { _id: new ObjectId(id) };
+            let updatedDoc = {
+                $set: {
+                    phone: newHouse?.phone,
+                    city: newHouse?.city,
+                    bedrooms: newHouse?.bedrooms,
+                    bathrooms: newHouse?.bathrooms,
+                    availability: newHouse?.availability,
+                    rentPerMonth: newHouse?.rentPerMonth,
+                    description: newHouse?.description,
+                    roomSize: newHouse?.roomSize,
+                }
+            }
+            console.log(updatedDoc);
+            let result = await houseCollection.updateOne(query, updatedDoc, options);
+            res.send(result);
+        })
+
+        //Delete House
+        app.delete('/delete-manage/:id', async (req, res) => {
+            let id = req.params.id;
+            let query = { _id: new ObjectId(id) };
+            let result = await houseCollection.deleteOne(query);
+            res.send(result);
+        })
+
         //View Details
         app.get('/houses/:id', async (req, res) => {
             let id = req.params.id;
@@ -121,7 +169,6 @@ async function run() {
         //Booking 
         app.post('/booking', async (req, res) => {
             let booking = req.body;
-            console.log(booking);
             let result = await bookingCollection.insertOne(booking)
             res.send(result);
         });
