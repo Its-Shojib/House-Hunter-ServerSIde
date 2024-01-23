@@ -39,7 +39,7 @@ async function run() {
 
         const userCollection = client.db("House-Hunter-DB").collection('Users');
         const houseCollection = client.db("House-Hunter-DB").collection('Houses');
-        // const requestedFoodCollection = client.db("Meal-Miracle-DB").collection('reqFoods');
+        const bookingCollection = client.db("House-Hunter-DB").collection('Bookings');
 
 
         // -------------------------------------AUTH---------------------------------------------
@@ -111,14 +111,34 @@ async function run() {
         });
 
         //View Details
-        app.get('/houses/:id', async(req,res)=>{
+        app.get('/houses/:id', async (req, res) => {
             let id = req.params.id;
-            let query = {_id : new ObjectId(id)};
+            let query = { _id: new ObjectId(id) };
             let result = await houseCollection.findOne(query);
             res.send(result);
+        });
+
+        //Booking 
+        app.post('/booking', async (req, res) => {
+            let booking = req.body;
+            console.log(booking);
+            let result = await bookingCollection.insertOne(booking)
+            res.send(result);
+        });
+
+        app.get('/manage-booking/:email', async (req, res) => {
+            let userEmail = req.params.email;
+            let query = { renterEmail: userEmail };
+            let result = await bookingCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        app.delete('/delete-booking/:id', async (req, res) => {
+            let id = req.params.id;
+            let query = { _id: new ObjectId(id) };
+            let result = await bookingCollection.deleteOne(query);
+            res.send(result);
         })
-
-
 
 
         await client.db("Owner").command({ ping: 1 });
