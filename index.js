@@ -62,9 +62,9 @@ async function run() {
         app.post('/user', async (req, res) => {
             let data = req.body;
             let email = data?.email;
-            let query = {email: email};
+            let query = { email: email };
             let exist = await userCollection.findOne(query);
-            if(exist){
+            if (exist) {
                 res.send('User already exist');
                 return;
             }
@@ -78,7 +78,7 @@ async function run() {
             console.log(userEmail);
             let query = { email: userEmail };
             let user = await userCollection.findOne(query);
-            console.log(user);
+            // console.log(user);
             let owner = false;
             if (user) {
                 owner = user?.role === 'owner'
@@ -96,15 +96,26 @@ async function run() {
             if (exist) {
                 if (exist?.password === pass) {
                     res.send(exist);
-                }
-                else {
+                } else {
                     res.send("Wrong Pass");
-
                 }
-            }
-            else {
+            } else {
                 res.send("Dont Exist");
             }
+        })
+
+        //All House Load
+        app.get('/houses', async (req, res) => {
+            result = await houseCollection.find().toArray();
+            res.send(result);
+        });
+
+        //View Details
+        app.get('/houses/:id', async(req,res)=>{
+            let id = req.params.id;
+            let query = {_id : new ObjectId(id)};
+            let result = await houseCollection.findOne(query);
+            res.send(result);
         })
 
 
