@@ -11,6 +11,7 @@ let cookieParser = require('cookie-parser')
 app.use(cors({
     origin: [
         'http://localhost:5173',
+        'https://lucent-marshmallow-c00b6c.netlify.app'
     ],
     credentials: true
 }));
