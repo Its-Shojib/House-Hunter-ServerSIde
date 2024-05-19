@@ -129,6 +129,8 @@ async function run() {
             let result = await houseCollection.findOne(query);
             res.send(result);
         });
+
+        //Updated single house
         app.patch('/update-house/:id', async (req, res) => {
             let newHouse = req.body;
             let id = req.params.id;
@@ -174,6 +176,7 @@ async function run() {
             res.send(result);
         });
 
+        //Maage My House
         app.get('/manage-booking/:email', async (req, res) => {
             let userEmail = req.params.email;
             let query = { renterEmail: userEmail };
@@ -181,6 +184,7 @@ async function run() {
             res.send(result);
         });
 
+        //Delete booking
         app.delete('/delete-booking/:id', async (req, res) => {
             let id = req.params.id;
             let query = { _id: new ObjectId(id) };
